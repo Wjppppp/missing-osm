@@ -3,17 +3,32 @@
         <a href="javascript:void(0)" class="close-btn" @click=closeNav>&times;</a>
         <ul>
             <li>
-                
+                <button id="add-btn" class="custom-btn" @click="addBtn"> Add Layer </button>
+                <button class="custom-btn" @click="removeBtn"> Remove </button>
+            </li>
+            <li id="geojson-block" class="hidden-block">
+                Upload a GeoJson file:
+                <div>
+                    <input type="file" id="upload-geojson-btn" class="custom-input" @change="addLayer">
+                    <label for="upload-geojson-btn" class="custom-btn">Choose a file</label>
+                    <!-- <button class="custom-btn" id="push-geojson-btn" @click="pushGeoJson">Push</button>
+                    <button class="custom-btn" id="delete-geojson-btn" @click="deleteGeoJson">Delete</button> -->
+                </div>
+            </li>
+            <li id="remove-layer-block" class="hidden-block">
+                Remove the selected layer:
+                <select v-model="selectedLayer" v-if="mapStore.layerControl" id="selected-layer">
+                    <option v-for="layer in mapStore.layerControl._layers" :value="layer.name">
+                        {{ layer.name }}
+                    </option>
+                    <option></option>
+                </select>
+                <button class="custom-btn" @click="removeLayer"> Confirm</button>
             </li>
             <li>
-                
             </li>
             <li>
-            </li>
-            <li>
-            </li>
-            <li>
-                
+
             </li>
         </ul>
     </div>
@@ -22,6 +37,65 @@
 </template>
 
 <script setup lang="ts">
+import { useMapStore } from '@/stores/map-store';
+import { ref } from 'vue'
+
+const mapStore = useMapStore()
+const selectedLayer = ref()
+
+// add new geojson layer
+const addBtn = () => {
+    const dialog = document.getElementById("geojson-block") as HTMLElement;
+    dialog.style.display = "block";
+}
+
+const removeBtn = () => {  
+    const dialog = document.getElementById("remove-layer-block") as HTMLElement;
+    dialog.style.display = "block";   
+}
+
+const removeLayer = () => {
+    // console.log("layer control", mapStore.layerControl._layers);
+    console.log("selected layer", selectedLayer.value);  
+
+    const layerCandidate = mapStore.layerControl._layers.find((layer: any) => layer.name === selectedLayer.value)    
+    console.log("layer", layerCandidate);
+    if(layerCandidate){
+        mapStore.removeLayer(layerCandidate.name, layerCandidate.layer);   
+    }
+    (document.getElementById("remove-layer-block") as HTMLElement).style.display = "none";    
+}
+
+// upload GeoJSON file and display objects on the map
+const geoJsonObj = ref(); // geojson object container
+const addLayer = (ev: any) => {
+    console.log("upload geojson");
+
+    // read json file
+    const jsonFile = ev.target.files[0];
+
+    // check if file is a .geojson or .json format
+    const checkJsonFile = jsonFile.name.split(".").pop();
+    if (checkJsonFile === "json" || checkJsonFile === "geojson") {
+
+        // read json file as text
+        const reader = new FileReader();
+        reader.readAsText(jsonFile);
+        reader.onload = (file) => {
+            // convert text to json object
+            geoJsonObj.value = JSON.parse(file.target?.result as any); // FeatureCollection from geojson/json file 
+            // display geojson object
+            // console.log("geojson", geoJsonObj.value);
+            mapStore.geoJsonDisplay(geoJsonObj.value, "geojson");
+        }
+
+        (document.getElementById("geojson-block") as HTMLElement).style.display = "none";
+
+    } else {
+        alert("Wrong file format!")
+    }
+}
+
 // show sidebar
 const openNav = () => {
     document.getElementById("control-panel")!.style.width = "300px";
@@ -93,6 +167,38 @@ const closeNav = () => {
 
 .open-btn:hover {
     background-color: rgb(51, 92, 78);
+}
+
+/* Buttons */
+.custom-btn {
+    font-size: 16px;
+    font-weight: 500;
+    padding: 5px;
+    margin: 5px;
+    border: 0;
+    border-radius: 5px;
+    color: white;
+    background-color: rgb(51, 92, 78);
+    display: inline-block;
+    cursor: pointer;
+}
+
+
+.custom-btn:hover {
+    background-color: rgb(245, 86, 12);
+}
+
+.custom-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.side-panel .hidden-block {
+    display: none;
 }
 
 </style>

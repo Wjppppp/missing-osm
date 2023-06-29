@@ -5,13 +5,16 @@
 <script setup lang="ts">
 import { ref, toRaw, onMounted } from 'vue'
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import L, { Layer } from "leaflet";
 import "leaflet-bing-layer"
+import 'leaflet.control.opacity';
+import { useMapStore } from '@/stores/map-store';
 
-const leafletMap = ref(); // map ref
+const mapStore = useMapStore() // map store
+// const leafletMap = ref(); // map ref
 const originLatLon = ref({ "lat": 5.66466, "lon": 10.24057 }); // yard 1
 const zoomLevel = 17;
-const buildingLayer = new L.LayerGroup()
+// const buildingLayer = new L.LayerGroup()
 
 const initMap = () => {
     // map layers
@@ -29,7 +32,7 @@ const initMap = () => {
     });
 
     const BingMapsKey = "AhUiTb_1C9bJJJBbIuwuHOZctXHnvyeVmM5jGtErwZ5U9IYe96rJEGZ-QwIY_J9V"
-    const bingMap = (L.tileLayer as any).bing ({
+    const bingMap = (L.tileLayer as any).bing({
         bingMapsKey: BingMapsKey,
         maxZoom: 19,
         imagerySet: 'AerialWithLabels',
@@ -37,27 +40,26 @@ const initMap = () => {
     });
 
     // initiate map
-    leafletMap.value = L.map("mapContainer", {
+    mapStore.map = L.map("mapContainer", {
         zoomControl: false,
         // zoomAnimation: false,
         center: [originLatLon.value.lat, originLatLon.value.lon],
         zoom: zoomLevel,
-        layers: [osm]
     });
 
-    const baseMaps = {
-        "ERSI Imagery": esriImagery,
-        "Bing Aerial": bingMap,
-        "OpenStreetMap": osm,
-    };
-
-    const overlays = {
-        "building": buildingLayer,
-    }
-
-    L.control.layers(baseMaps, overlays).addTo(toRaw(leafletMap.value));
-
+    // zoom control
+    const zoomControl = L.control.zoom({
+        position: "bottomright",
+    }).addTo(mapStore.map);
+    
+    mapStore.layerControl = L.control.layers();
+    mapStore.addLayer("ERSI Imagery", esriImagery, "overlay");
+    mapStore.addLayer("Bing Aerial", bingMap, "overlay");
+    mapStore.addLayer("OpenStreetMap", osm, "overlay");
+    // set initial layer
+    // mapStore.map.addLayer(osm)
 }
+
 
 // Mount
 onMounted(() => {
@@ -67,7 +69,6 @@ onMounted(() => {
 
 // export
 defineExpose({
-
 })
 
 </script>
