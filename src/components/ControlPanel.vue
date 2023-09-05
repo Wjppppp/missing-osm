@@ -4,7 +4,7 @@
         <ul>
             <li>
                 <button id="add-btn" class="custom-btn" @click="addBtn"> Add Layer </button>
-                <button class="custom-btn" @click="removeBtn"> Remove </button>
+                <button class="custom-btn" @click="removeBtn"> Remove Layer </button>
             </li>
             <li id="geojson-block" class="hidden-block">
                 Upload a GeoJson file:
@@ -17,15 +17,16 @@
             </li>
             <li id="remove-layer-block" class="hidden-block">
                 Remove the selected layer:
-                <select v-model="selectedLayer" v-if="mapStore.layerControl" id="selected-layer">
-                    <option v-for="layer in mapStore.layerControl._layers" :value="layer.name">
-                        {{ layer.name }}
+                <select v-model="selectedLayer"  id="selected-layer">
+                    <option v-for="layer in mapStore.layerList" >
+                        {{ layer[0] }}
                     </option>
                     <option></option>
                 </select>
                 <button class="custom-btn" @click="removeLayer"> Confirm</button>
-            </li>
+            </li>                
             <li>
+                <button class="custom-btn" @click="downloadSamples"> Download Samples </button>
             </li>
             <li>
 
@@ -52,16 +53,18 @@ const addBtn = () => {
 const removeBtn = () => {  
     const dialog = document.getElementById("remove-layer-block") as HTMLElement;
     dialog.style.display = "block";   
+    console.log("layer list", mapStore.layerList);  
+    // forceRerender();
 }
 
 const removeLayer = () => {
     // console.log("layer control", mapStore.layerControl._layers);
-    console.log("selected layer", selectedLayer.value);  
+    console.log("selected layer", selectedLayer.value, mapStore.layerList);  
 
-    const layerCandidate = mapStore.layerControl._layers.find((layer: any) => layer.name === selectedLayer.value)    
-    console.log("layer", layerCandidate);
-    if(layerCandidate){
-        mapStore.removeLayer(layerCandidate.name, layerCandidate.layer);   
+    // const layerCandidate = mapStore.layerList.find((layer: any) => layer.name === selectedLayer.value)    
+    console.log("layer", selectedLayer.value);
+    if(selectedLayer.value){
+        mapStore.removeLayer(selectedLayer.value);   
     }
     (document.getElementById("remove-layer-block") as HTMLElement).style.display = "none";    
 }
@@ -76,6 +79,7 @@ const addLayer = (ev: any) => {
 
     // check if file is a .geojson or .json format
     const checkJsonFile = jsonFile.name.split(".").pop();
+    const fileName = jsonFile.name.split(".")[0];
     if (checkJsonFile === "json" || checkJsonFile === "geojson") {
 
         // read json file as text
@@ -86,7 +90,7 @@ const addLayer = (ev: any) => {
             geoJsonObj.value = JSON.parse(file.target?.result as any); // FeatureCollection from geojson/json file 
             // display geojson object
             // console.log("geojson", geoJsonObj.value);
-            mapStore.geoJsonDisplay(geoJsonObj.value, "geojson");
+            mapStore.geoJsonDisplay(geoJsonObj.value, fileName);
         }
 
         (document.getElementById("geojson-block") as HTMLElement).style.display = "none";
@@ -104,6 +108,10 @@ const openNav = () => {
 // hide sidebar
 const closeNav = () => {
     document.getElementById("control-panel")!.style.width = "0";
+}
+
+const downloadSamples = () => {
+    console.log("coords", mapStore.bbox_coords);    
 }
 
 </script>
@@ -137,7 +145,6 @@ const closeNav = () => {
     text-decoration: none;
     font-size: 20px;
     display: block;
-
 }
 
 /* Position and style the close button (top right corner) */

@@ -4,6 +4,8 @@
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "composite": true,
+    "ignoreDeprecations": "5.0",
+    "noImplicitUseStrict": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

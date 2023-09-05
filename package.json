@@ -12,6 +12,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@geoman-io/leaflet-geoman-free": "^2.14.2",
     "@types/leaflet": "^1.9.3",
     "leaflet": "^1.9.4",
     "leaflet-bing-layer": "^3.3.1",

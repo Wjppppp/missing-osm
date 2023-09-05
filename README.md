@@ -2,6 +2,12 @@
 
 This project is a map interface that visualizes missing OSM buildings.
 
+## Todo
+
+- Django backend + Postgres DB
+- Metrics
+- Evaluation service
+
 ## Project Setup
 
 ```sh
