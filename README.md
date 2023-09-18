@@ -1,12 +1,8 @@
 # missing-osm
 
-This project is a map interface that visualizes missing OSM buildings.
+This project is a map interface that visualizes missing OSM buildings
 
-## Todo
-
-- Django backend + Postgres DB
-- Metrics
-- Evaluation service
+![Demo](figures/web_demo.png)
 
 ## Project Setup
 

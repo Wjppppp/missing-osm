@@ -17,20 +17,37 @@
             </li>
             <li id="remove-layer-block" class="hidden-block">
                 Remove the selected layer:
-                <select v-model="selectedLayer"  id="selected-layer">
-                    <option v-for="layer in mapStore.layerList" >
+                <select v-model="selectedLayer" id="selected-layer">
+                    <option v-for="layer in mapStore.layerList">
                         {{ layer[0] }}
                     </option>
                     <option></option>
                 </select>
                 <button class="custom-btn" @click="removeLayer"> Confirm</button>
-            </li>                
+            </li>
             <li>
+                <input type="radio" id="draw" value="draw" v-model="coordMode" />
+                <label for="draw">Draw</label>
+
+                <input type="radio" id="type" value="type" v-model="coordMode" />
+                <label for="type">Type</label>
+                <!-- {{ coordMode }} -->
+
+                <form id="coords">
+                    <label for="xmin">Left:</label>
+                    <input v-model="xmin" placeholder="Min longitude">
+                    <label for="ymax">Top: </label>
+                    <input v-model="ymax" placeholder="Max latitude">
+                    <label for="xmax">Right: </label>
+                    <input v-model="xmax" placeholder="Max longitude">
+                    <label for="ymin">Bottom: </label>
+                    <input v-model="ymin" placeholder="Min Latitude">
+                </form>
                 <button class="custom-btn" @click="downloadSamples"> Download Samples </button>
             </li>
-            <li>
+            <!-- <li>
 
-            </li>
+            </li> -->
         </ul>
     </div>
 
@@ -50,23 +67,23 @@ const addBtn = () => {
     dialog.style.display = "block";
 }
 
-const removeBtn = () => {  
+const removeBtn = () => {
     const dialog = document.getElementById("remove-layer-block") as HTMLElement;
-    dialog.style.display = "block";   
-    console.log("layer list", mapStore.layerList);  
+    dialog.style.display = "block";
+    console.log("layer list", mapStore.layerList);
     // forceRerender();
 }
 
 const removeLayer = () => {
     // console.log("layer control", mapStore.layerControl._layers);
-    console.log("selected layer", selectedLayer.value, mapStore.layerList);  
+    console.log("selected layer", selectedLayer.value, mapStore.layerList);
 
     // const layerCandidate = mapStore.layerList.find((layer: any) => layer.name === selectedLayer.value)    
     console.log("layer", selectedLayer.value);
-    if(selectedLayer.value){
-        mapStore.removeLayer(selectedLayer.value);   
+    if (selectedLayer.value) {
+        mapStore.removeLayer(selectedLayer.value);
     }
-    (document.getElementById("remove-layer-block") as HTMLElement).style.display = "none";    
+    (document.getElementById("remove-layer-block") as HTMLElement).style.display = "none";
 }
 
 // upload GeoJSON file and display objects on the map
@@ -110,8 +127,24 @@ const closeNav = () => {
     document.getElementById("control-panel")!.style.width = "0";
 }
 
+
+const coordMode = ref()
+const xmin = ref()
+const xmax = ref()
+const ymin = ref()
+const ymax = ref()
 const downloadSamples = () => {
-    console.log("coords", mapStore.bbox_coords);    
+    console.log("coords", mapStore.bbox_coords);
+    if (mapStore.bbox_coords.length >= 1) {
+        const leftTop = mapStore.bbox_coords[0][1];
+        const rightBottom = mapStore.bbox_coords[0][3];
+
+        xmin.value = leftTop.lng
+        xmax.value = rightBottom.lng
+        ymin.value = rightBottom.lat
+        ymax.value = leftTop.lat
+
+    }
 }
 
 </script>
@@ -208,4 +241,13 @@ const downloadSamples = () => {
     display: none;
 }
 
+form input {
+    box-sizing: border-box;
+    width: calc(100% - 100px);
+}
+
+form label {
+    display: inline-block;
+    width: 80px;
+}
 </style>
