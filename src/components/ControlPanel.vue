@@ -26,12 +26,24 @@
                 <button class="custom-btn" @click="removeLayer"> Confirm</button>
             </li>
             <li>
-                <input type="radio" id="draw" value="draw" v-model="coordMode" />
+                Building Detection Service
+                <!-- <input type="radio" id="draw" value="draw" v-model="coordMode" />
                 <label for="draw">Draw</label>
 
                 <input type="radio" id="type" value="type" v-model="coordMode" />
-                <label for="type">Type</label>
+                <label for="type">Type</label> -->
                 <!-- {{ coordMode }} -->
+                Model: 
+                <select v-model="inferenceModel" id="inference-model">
+                    <option>FS_model_01</option>
+                    <option>FS_model_02</option>
+                    <option>FS_model_03</option>
+                    <option>FS_model_04</option>
+                    <option>FS_model_05</option>
+                    <option>FS_model_06</option>
+                    <option>FS_model_07</option>
+                    <option>FS_model_08</option>
+                </select>
 
                 <form id="coords">
                     <label for="xmin">Left:</label>
@@ -43,7 +55,9 @@
                     <label for="ymin">Bottom: </label>
                     <input v-model="ymin" placeholder="Min Latitude">
                 </form>
-                <button class="custom-btn" @click="downloadSamples"> Download Samples </button>
+                <div>{{ serviceMsg }}</div>
+                <button class="custom-btn" @click="inference"> Inference </button>
+                <button class="custom-btn" @click="downloadSamples"> Download </button>
             </li>
             <!-- <li>
 
@@ -60,6 +74,7 @@ import { ref } from 'vue'
 
 const mapStore = useMapStore()
 const selectedLayer = ref()
+const serviceMsg = ref()
 
 // add new geojson layer
 const addBtn = () => {
@@ -127,14 +142,18 @@ const closeNav = () => {
     document.getElementById("control-panel")!.style.width = "0";
 }
 
-
 const coordMode = ref()
 const xmin = ref()
 const xmax = ref()
 const ymin = ref()
 const ymax = ref()
-const downloadSamples = () => {
+const predictionGeoJson = ref()
+const inferenceModel = ref()
+const inference = async () => {
+    serviceMsg.value = "Inferencing ..."
+
     console.log("coords", mapStore.bbox_coords);
+
     if (mapStore.bbox_coords.length >= 1) {
         const leftTop = mapStore.bbox_coords[0][1];
         const rightBottom = mapStore.bbox_coords[0][3];
@@ -143,8 +162,47 @@ const downloadSamples = () => {
         xmax.value = rightBottom.lng
         ymin.value = rightBottom.lat
         ymax.value = leftTop.lat
-
     }
+
+
+    const requestOptions: RequestInit = {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '<origin> | *',
+            'Access-Control-Allow-Methods': 'POST,GET,OPTIONS',
+            'Accept': 'application/json',
+            'key': '123456789qiu0',
+        },
+        body: JSON.stringify({
+            "bbox": [xmin.value, ymin.value, xmax.value, ymax.value],
+            "model": inferenceModel.value
+        }),
+        // mode:'no-cors'
+    }
+
+    console.log("request", requestOptions);    
+    
+    const response = await fetch("http://127.0.0.1:7001/inference", requestOptions)   
+    const data = await response.json()
+    console.log("response", data);
+    serviceMsg.value = "Complete! \n" + data['num'] + " buildings detected. \n" + Math.round(data['time']) +" seconds used."
+    predictionGeoJson.value = data['geojson']
+    mapStore.geoJsonDisplay(predictionGeoJson.value, "prediction")
+
+}
+
+const download = (content: any, fileName: string, contentType: string) => {
+    const a = document.createElement("a");
+    const file = new Blob([content], { type: contentType });
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
+}
+
+const downloadSamples = () => {
+    console.log(predictionGeoJson.value);
+    download(JSON.stringify(predictionGeoJson.value), "yourfile.geojson", "text/plain");
 }
 
 </script>
