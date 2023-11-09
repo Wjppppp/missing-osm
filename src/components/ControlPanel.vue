@@ -172,11 +172,12 @@ const inference = async () => {
             'Access-Control-Allow-Origin': '<origin> | *',
             'Access-Control-Allow-Methods': 'POST,GET,OPTIONS',
             'Accept': 'application/json',
-            'key': '123456789qiu0',
+            
         },
         body: JSON.stringify({
             "bbox": [xmin.value, ymin.value, xmax.value, ymax.value],
-            "model": inferenceModel.value
+            "model": inferenceModel.value,
+            'api_key': 'AhUiTb_1C9bJJJBbIuwuHOZctXHnvyeVmM5jGtErwZ5U9IYe96rJEGZ-QwIY_J9V',
         }),
         // mode:'no-cors'
     }
